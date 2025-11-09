@@ -1,6 +1,7 @@
 package device
 
 import (
+	"context"
 	"math/rand"
 	"time"
 )
@@ -13,18 +14,25 @@ type Reading struct {
 	GlucoseLevel float64
 }
 
-func SimulateDevice(deviceID string, out chan<- Reading) {
+func SimulateDevice(ctx context.Context, deviceID string, out chan<- Reading) {
 	readingID := 1
 	for {
-		// Simulate a glucose reading
-		reading := Reading{
-			ID:           readingID,
-			DeviceID:     deviceID,
-			Timestamp:    time.Now(),
-			GlucoseLevel: 70 + rand.Float64()*100, // Random glucose level between 70 and 170
+		select {
+		case <-ctx.Done():
+			close(out)
+			return
+		default:
+			// Simulate a glucose reading
+			reading := Reading{
+				ID:           readingID,
+				DeviceID:     deviceID,
+				Timestamp:    time.Now(),
+				GlucoseLevel: 70 + rand.Float64()*100, // Random glucose level between 70 and 170
+			}
+			out <- reading
+			readingID++
+			time.Sleep(1 * time.Second)
 		}
-		out <- reading
-		readingID++
-		time.Sleep(1 * time.Second)
+
 	}
 }
