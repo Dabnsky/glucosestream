@@ -6,6 +6,18 @@ import (
 	"time"
 )
 
+func fanIn(channels ...<-chan device.Reading) <-chan device.Reading {
+	out := make(chan device.Reading)
+	for _, ch := range channels {
+		go func(c <-chan device.Reading) {
+			for reading := range c {
+				out <- reading
+			}
+		}(ch)
+	}
+	return out
+}
+
 func main() {
 
 	// set up multiple channels (simulated multiple devices) that feed into a single output
@@ -20,7 +32,7 @@ func main() {
 
 	merged := fanIn(devices[0], devices[1], devices[2])
 
-	for reading := range readings {
+	for reading := range merged {
 		fmt.Printf("Reading: %+v\n", reading)
 		time.Sleep(100 * time.Millisecond)
 	}
