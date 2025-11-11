@@ -14,12 +14,12 @@ type Reading struct {
 	GlucoseLevel float64
 }
 
-func SimulateDevice(ctx context.Context, deviceID string, out chan<- Reading) {
+func SimulateDevice(ctx context.Context, deviceID string, data chan<- Reading) {
 	readingID := 1
 	for {
 		select {
 		case <-ctx.Done():
-			close(out)
+			close(data)
 			return
 		default:
 			// Simulate a glucose reading
@@ -29,7 +29,7 @@ func SimulateDevice(ctx context.Context, deviceID string, out chan<- Reading) {
 				Timestamp:    time.Now(),
 				GlucoseLevel: 70 + rand.Float64()*100, // Random glucose level between 70 and 170
 			}
-			out <- reading
+			data <- reading
 			readingID++
 			time.Sleep(1 * time.Second)
 		}
