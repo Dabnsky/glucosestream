@@ -33,6 +33,7 @@ func fanIn(channels ...<-chan device.Reading) <-chan device.Reading {
 
 func main() {
 
+	// add context to allow terminal signals
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -52,10 +53,10 @@ func main() {
 
 	merged := fanIn(devices[0], devices[1], devices[2])
 
+	// handle shutdown on interrupt signal
 	go func() {
 		<-sig
 		fmt.Println("Shutting down")
-
 		cancel()
 	}()
 
